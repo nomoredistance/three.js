@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<title>three.js webgl - cameras</title>
@@ -39,7 +39,7 @@
 		<b>O</b> orthographic <b>P</b> perspective
 		</div>
 
-		<script src="../build/Three.js"></script>
+		<script src="../build/three.min.js"></script>
 		<script src="js/Stats.js"></script>
 
 		<script>
@@ -49,11 +49,9 @@
 
 			var container, stats;
 			var camera, scene, renderer, mesh;
-			var cameraRig, activeCamera;
+			var cameraRig, activeCamera, activeHelper;
 			var cameraPerspective, cameraOrtho;
 			var cameraPerspectiveHelper, cameraOrthoHelper;
-
-			var r = 0;
 
 			init();
 			animate();
@@ -69,23 +67,23 @@
 
 				camera = new THREE.PerspectiveCamera( 50, 0.5 * SCREEN_WIDTH / SCREEN_HEIGHT, 1, 10000 );
 				camera.position.z = 2500;
-				scene.add( camera );
 
 				cameraPerspective = new THREE.PerspectiveCamera( 50, 0.5 * SCREEN_WIDTH / SCREEN_HEIGHT, 150, 1000 );
 
 				cameraPerspectiveHelper = new THREE.CameraHelper( cameraPerspective );
-				cameraPerspective.add( cameraPerspectiveHelper );
+				scene.add( cameraPerspectiveHelper );
 
 				//
 
 				cameraOrtho = new THREE.OrthographicCamera( 0.5 * SCREEN_WIDTH / - 2, 0.5 * SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_HEIGHT / - 2, 150, 1000 );
 
 				cameraOrthoHelper = new THREE.CameraHelper( cameraOrtho );
-				cameraOrtho.add( cameraOrthoHelper );
+				scene.add( cameraOrthoHelper );
 
 				//
 
 				activeCamera = cameraPerspective;
+				activeHelper = cameraPerspectiveHelper;
 
 
 				// counteract different front orientation of cameras vs rig
@@ -115,20 +113,20 @@
 
 				//
 
-				var x, y, z, geo = new THREE.Geometry();
+				var geometry = new THREE.Geometry();
 
 				for ( var i = 0; i < 10000; i ++ ) {
 
-					x = THREE.Math.randFloatSpread( 2000 );
-					y = THREE.Math.randFloatSpread( 2000 );
-					z = THREE.Math.randFloatSpread( 2000 );
+					var vertex = new THREE.Vector3();
+					vertex.x = THREE.Math.randFloatSpread( 2000 );
+					vertex.y = THREE.Math.randFloatSpread( 2000 );
+					vertex.z = THREE.Math.randFloatSpread( 2000 );
 
-					var p = new THREE.Vector3( x, y, z );
-					geo.vertices.push( new THREE.Vertex( p ) );
+					geometry.vertices.push( vertex );
 
 				}
 
-				var particles = new THREE.ParticleSystem( geo, new THREE.ParticleBasicMaterial( { color: 0x888888 } ) );
+				var particles = new THREE.ParticleSystem( geometry, new THREE.ParticleBasicMaterial( { color: 0x888888 } ) );
 				scene.add( particles );
 
 				//
@@ -167,8 +165,19 @@
 
 				switch( event.keyCode ) {
 
-					case 79: /*O*/	activeCamera = cameraOrtho; break;
-					case 80: /*P*/ 	activeCamera = cameraPerspective; break;
+					case 79: /*O*/
+
+						activeCamera = cameraOrtho;
+						activeHelper = cameraOrthoHelper;
+
+						break;
+
+					case 80: /*P*/
+
+						activeCamera = cameraPerspective;
+						activeHelper = cameraPerspectiveHelper;
+
+						break;
 
 				}
 
@@ -211,6 +220,8 @@
 
 			function render() {
 
+				var r = Date.now() * 0.0005;
+
 				mesh.position.x = 700 * Math.cos( r );
 				mesh.position.z = 700 * Math.sin( r );
 				mesh.position.y = 700 * Math.sin( r );
@@ -224,20 +235,20 @@
 					cameraPerspective.far = mesh.position.length();
 					cameraPerspective.updateProjectionMatrix();
 
-					cameraPerspectiveHelper.update( cameraPerspective );
-					cameraPerspectiveHelper.lines.visible = true;
+					cameraPerspectiveHelper.update();
+					cameraPerspectiveHelper.visible = true;
 
-					cameraOrthoHelper.lines.visible = false;
+					cameraOrthoHelper.visible = false;
 
 				} else {
 
 					cameraOrtho.far = mesh.position.length();
 					cameraOrtho.updateProjectionMatrix();
 
-					cameraOrthoHelper.update( cameraOrtho );
-					cameraOrthoHelper.lines.visible = true;
+					cameraOrthoHelper.update();
+					cameraOrthoHelper.visible = true;
 
-					cameraPerspectiveHelper.lines.visible = false;
+					cameraPerspectiveHelper.visible = false;
 
 				}
 
@@ -245,13 +256,15 @@
 
 				renderer.clear();
 
+				activeHelper.visible = false;
+
 				renderer.setViewport( 0, 0, SCREEN_WIDTH/2, SCREEN_HEIGHT );
 				renderer.render( scene, activeCamera );
 
+				activeHelper.visible = true;
+
 				renderer.setViewport( SCREEN_WIDTH/2, 0, SCREEN_WIDTH/2, SCREEN_HEIGHT );
 				renderer.render( scene, camera );
-
-				r += 0.01;
 
 			}
 

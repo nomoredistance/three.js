@@ -2,7 +2,7 @@
  * @author alteredq / http://alteredqualia.com/
  */
 
-THREE.SavePass = function( renderTarget ) {
+THREE.SavePass = function ( renderTarget ) {
 
 	var shader = THREE.ShaderExtras[ "screen" ];
 
@@ -22,7 +22,7 @@ THREE.SavePass = function( renderTarget ) {
 
 	if ( this.renderTarget === undefined ) {
 
-		this.renderTargetParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBufer: false };
+		this.renderTargetParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: false };
 		this.renderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, this.renderTargetParameters );
 
 	}
@@ -39,7 +39,7 @@ THREE.SavePass.prototype = {
 
 		if ( this.uniforms[ this.textureID ] ) {
 
-			this.uniforms[ this.textureID ].texture = readBuffer;
+			this.uniforms[ this.textureID ].value = readBuffer;
 
 		}
 
